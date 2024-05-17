@@ -32,13 +32,15 @@ def init_vectors_cli(
     name: Optional[str] = Opt(None, "--name", "-n", help="Optional name for the word vectors, e.g. en_core_web_lg.vectors"),
     verbose: bool = Opt(False, "--verbose", "-V", "-VV", help="Display more information for debugging purposes"),
     jsonl_loc: Optional[Path] = Opt(None, "--lexemes-jsonl", "-j", help="Location of JSONL-formatted attributes file", hidden=True),
+    attr: str = Opt("ORTH", "--attr", "-a", help="Optional token attribute to use for vectors, e.g. LOWER or NORM"),
     # fmt: on
 ):
     """Convert word vectors for use with spaCy. Will export an nlp object that
     you can use in the [initialize] block of your config to initialize
     a model with vectors.
     """
-    util.logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    if verbose:
+        util.logger.setLevel(logging.DEBUG)
     msg.info(f"Creating blank nlp object for language '{lang}'")
     nlp = util.get_lang_class(lang)()
     if jsonl_loc is not None:
@@ -50,6 +52,7 @@ def init_vectors_cli(
         prune=prune,
         name=name,
         mode=mode,
+        attr=attr,
     )
     msg.good(f"Successfully converted {len(nlp.vocab.vectors)} vectors")
     nlp.to_disk(output_dir)
@@ -85,7 +88,8 @@ def init_pipeline_cli(
     use_gpu: int = Opt(-1, "--gpu-id", "-g", help="GPU ID or -1 for CPU")
     # fmt: on
 ):
-    util.logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    if verbose:
+        util.logger.setLevel(logging.DEBUG)
     overrides = parse_config_overrides(ctx.args)
     import_code(code_path)
     setup_gpu(use_gpu)
@@ -114,7 +118,8 @@ def init_labels_cli(
     """Generate JSON files for the labels in the data. This helps speed up the
     training process, since spaCy won't have to preprocess the data to
     extract the labels."""
-    util.logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    if verbose:
+        util.logger.setLevel(logging.DEBUG)
     if not output_path.exists():
         output_path.mkdir(parents=True)
     overrides = parse_config_overrides(ctx.args)
